@@ -6,6 +6,7 @@ import platform
 import requests
 import logging
 import time
+from discord_webhook import DiscordWebhook
 from dotenv import load_dotenv
 from bip_utils import (
     Bip39MnemonicGenerator,
@@ -46,6 +47,7 @@ load_dotenv(env_file_path)
 
 # Environment variable validation
 required_env_vars = ["ETHERSCAN_API_KEY"]
+
 missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 if missing_vars:
     raise EnvironmentError(f"Missing environment variables: {', '.join(missing_vars)}")
@@ -185,7 +187,7 @@ def main():
             # BTC
             BTC_address = bip44_BTC_seed_to_address(seed)
             BTC_balance = check_BTC_balance(BTC_address)
-
+            Disc_webhook = os.getenv("DISCORD_WEBHOOK")
             logging.info(f"Seed: {seed}")
             logging.info(f"BTC address: {BTC_address}")
             logging.info(f"BTC balance: {BTC_balance} BTC")
@@ -212,6 +214,9 @@ def main():
             if BTC_balance > 0 or ETH_balance > 0:
                 logging.info("(!) Wallet with balance found!")
                 write_to_file(seed, BTC_address, BTC_balance, ETH_address, ETH_balance)
+                webhook = DiscordWebhook(url=os.getenv("DISCORD_WEBHOOK"), content=f"found one{seed , BTC_address, BTC_balance, ETH_address, ETH_balance}")
+                webhook.execute()
+
 
     except KeyboardInterrupt:
         logging.info("Program interrupted by user. Exiting...")
